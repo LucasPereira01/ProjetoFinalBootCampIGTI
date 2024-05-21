@@ -2,6 +2,9 @@ import requests
 import ssl
 import warnings
 
+
+domainId = 'e9abe3c6-5ca9-4432-87fe-006c7236fec7'
+
 warnings.filterwarnings("ignore")
 
 #se quiser armazenar num arquivo
@@ -95,7 +98,7 @@ def domains(token):
 
 def content(token):
     
-    url = "https://server.demo.sas.com/referenceData/domains/b13198e1-a041-4d51-b3aa-dd43b15189d1/contents/"
+    url = f"https://server.demo.sas.com/referenceData/domains/{domainId}/contents/"
     ## retorna todas  as informaçoes de alterações e updates do domains e suas colunas
 
     payload = {}
@@ -117,9 +120,9 @@ def content(token):
         print(response)
         get_token()
 
-def contentContents(token):
+def currentContents(token):
     
-    url = "https://server.demo.sas.com/referenceData/domains/b13198e1-a041-4d51-b3aa-dd43b15189d1/currentContents/"
+    url = f"https://server.demo.sas.com/referenceData/domains/{domainId}/currentContents/"
     ## retorna todas  as informaçoes de alterações e updates do domains e suas colunas
 
     payload = {}
@@ -160,6 +163,103 @@ def createDomiens(token):
         r = response.json()
 
         
+        return r
+    else:
+        print(response)
+        get_token()
+
+
+def createDomiensEntries(token):
+    
+    url = "https://server.demo.sas.com/referenceData/domains/e9abe3c6-5ca9-4432-87fe-006c7236fec7/contents"
+    ## retorna todas  as informaçoes de alterações e updates do domains e suas colunas
+
+    payload = "{\n  \"label\": \"lookup1.0\",\n  \"keyLabel\": \"Severity\",\n  \"valueLabel\": \"SLA Class\",\n  \"status\": \"developing\",\n  \"majorNumber\": 1,\n  \"minorNumber\": 1,\n  \"entries\": [\n    {\n      \"key\": \"A\",\n      \"value\": \"5\"\n    },\n    {\n      \"key\": \"B\",\n      \"value\": \"10\"\n    }\n  ]\n}"
+    #crio a autorizacao Bearer
+    autorization = f'Bearer {token}'
+    headers = {
+    "Content-Type": "application/vnd.sas.data.reference.domain.content.full+json",
+    "Authorization": autorization,
+    "Accept": "application/vnd.sas.data.reference.domain.content.full+json, application/vnd.sas.data.reference.value.list.content.full+json, application/json, application/vnd.sas.error+json"
+}
+    response = requests.request("POST", url, headers=headers,data=payload, verify = False)
+    if response.status_code ==201:
+        r = response.json()
+
+        if not r:
+            raise ValueError("Dados não fornecidos")
+
+        
+        return r
+    else:
+        print(response)
+        get_token()
+
+
+
+def get_etag(token):
+    
+    url = "https://server.demo.sas.com/referenceData/domains/e9abe3c6-5ca9-4432-87fe-006c7236fec7/currentContents/"
+    ## retorna todas  as informaçoes de alterações e updates do domains e suas colunas
+
+    payload = {}
+    #crio a autorizacao Bearer
+    autorization = f'Bearer {token}'
+    headers = {
+    'Authorization': autorization,
+    'Accept': 'application/vnd.sas.collection+json, application/json, application/vnd.sas.errpr+json'
+    }
+    response = requests.request("GET", url, headers=headers, verify = False)
+    if response.status_code ==200:
+        etag = response.headers.get('ETag')
+        print(etag)
+
+        return etag
+    else:
+        print(response)
+        print(response.text)
+
+def upDateEntries(token):
+    etag = get_etag(token)
+    if not etag:
+        print("Não foi possível obter o ETAG")
+        return None
+    url = "https://server.demo.sas.com/referenceData/domains/e9abe3c6-5ca9-4432-87fe-006c7236fec7/contents/5411fcbc-250a-4dd8-ad4e-38cb65d9ed6f/entries"
+    
+    payload = [
+        {
+            "op": "replace",
+            "path": "/z",
+            "value": "Super Urgente"
+
+        },
+        {
+            "op": "add",
+            "path": "/teste",
+            "value": "Super Urgente"
+        },
+        {
+            "op": "replace",
+            "path": "/b",
+            "value": "Critical"
+        }
+    ]
+    
+    autorization = f'Bearer {token}'
+    headers = {
+        "If-Match": etag,
+        "Content-Type": "application/json-patch+json",
+        "Authorization": autorization,
+        "Accept": "application/vnd.sas.collection+json, application/json, application/vnd.sas.error+json"
+    }
+    
+    response = requests.request("PATCH", url, headers=headers, json=payload, verify=False)
+    print(response.json())
+    
+    if response.status_code == 200:
+        r = response.json()
+        if not r:
+            raise ValueError("Dados não fornecidos")
         return r
     else:
         print(response)
