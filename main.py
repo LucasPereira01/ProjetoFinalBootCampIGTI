@@ -1,8 +1,9 @@
 from flask import Flask
 
-from buscasas import confSas, readFile, armaze_token, get_token, domains,content,contentContents,createDomiens
+from buscasas import confSas, readFile, armaze_token, get_token, domains,content,currentContents,createDomiens,createDomiensEntries,upDateEntries
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
 
 #funcao get token 
 armaze_token()
@@ -17,9 +18,11 @@ def get_buscasas():
     #busca = confSas(token)   
     #domain = domains(token)   
     #contents = content(token)   
-    #contentContent = contentContents(token)   
-    createDomien = createDomiens(token)   
-    return createDomien
+    #currentContent = currentContents(token)   
+    #createDomien = createDomiens(token)   
+    #createDomiensEntrie = createDomiensEntries(token)   
+    upDateEntrie = upDateEntries(token)   
+    return upDateEntrie
     #quando expirar vai trazer um erro de api expirada
     # trata o erro e chama essa funcao
     #armaza_token()
